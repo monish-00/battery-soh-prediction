@@ -4,10 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# --------------------------------------------------
-# 1. Locate the processed dataset
-# --------------------------------------------------
-
+# 1. Locate the project
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 DATASET_FILE = (
@@ -17,53 +14,36 @@ DATASET_FILE = (
     / "B0005_discharge_data.csv"
 )
 
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
+
+
+# 2. Check and load the dataset
 if not DATASET_FILE.exists():
     raise FileNotFoundError(
-        f"Processed dataset not found: {DATASET_FILE}"
+        f"Dataset not found: {DATASET_FILE}"
     )
-
-
-# --------------------------------------------------
-# 2. Load the data
-# --------------------------------------------------
 
 df = pd.read_csv(DATASET_FILE)
 
 df = df.sort_values("cycle_index").reset_index(drop=True)
 
-print("\nDataset loaded successfully.")
 
-print(f"Number of records: {len(df)}")
+# 3. Display data quality information
+print("\nDataset loaded successfully!")
+
+print("Number of discharge records:", len(df))
 
 print("\nMissing values:")
-
 print(df.isnull().sum())
 
-print("\nCapacity range:")
+print("\nCapacity statistics:")
+print(df["capacity_ah"].describe())
 
-print(
-    f"Minimum: {df['capacity_ah'].min():.4f} Ah"
-)
-
-print(
-    f"Maximum: {df['capacity_ah'].max():.4f} Ah"
-)
-
-print("\nSoH range:")
-
-print(
-    f"Minimum: {df['soh_percent'].min():.2f}%"
-)
-
-print(
-    f"Maximum: {df['soh_percent'].max():.2f}%"
-)
+print("\nSoH statistics:")
+print(df["soh_percent"].describe())
 
 
-# --------------------------------------------------
-# 3. Plot capacity degradation
-# --------------------------------------------------
-
+# 4. Plot capacity degradation
 plt.figure(figsize=(10, 5))
 
 plt.plot(
@@ -77,28 +57,21 @@ plt.plot(
 plt.xlabel("Experimental Record Index")
 plt.ylabel("Discharge Capacity (Ah)")
 plt.title("NASA B0005 - Capacity Degradation")
-
 plt.grid(True)
 plt.tight_layout()
 
-capacity_plot = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "B0005_capacity_degradation.png"
+capacity_path = (
+    OUTPUT_DIR / "B0005_capacity_degradation.png"
 )
 
-plt.savefig(capacity_plot, dpi=150)
+plt.savefig(capacity_path, dpi=150)
+
+print(f"\nCapacity plot saved: {capacity_path}")
 
 plt.show()
 
-print(f"\nCapacity plot saved to: {capacity_plot}")
 
-
-# --------------------------------------------------
-# 4. Plot SoH degradation
-# --------------------------------------------------
-
+# 5. Plot State of Health
 plt.figure(figsize=(10, 5))
 
 plt.plot(
@@ -112,19 +85,13 @@ plt.plot(
 plt.xlabel("Experimental Record Index")
 plt.ylabel("State of Health (%)")
 plt.title("NASA B0005 - State of Health Degradation")
-
 plt.grid(True)
 plt.tight_layout()
 
-soh_plot = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "B0005_soh_degradation.png"
-)
+soh_path = OUTPUT_DIR / "B0005_soh_degradation.png"
 
-plt.savefig(soh_plot, dpi=150)
+plt.savefig(soh_path, dpi=150)
+
+print(f"SoH plot saved: {soh_path}")
 
 plt.show()
-
-print(f"SoH plot saved to: {soh_plot}")
